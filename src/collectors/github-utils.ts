@@ -5,12 +5,19 @@ export const octokit = new Octokit({
 });
 
 export async function fetchReadme(fullName: string): Promise<string> {
-  const [owner, repo] = fullName.split("/");
-  try {
-    const { data } = await octokit.repos.getReadme({ owner, repo });
-    const content = Buffer.from(data.content, "base64").toString("utf-8");
-    return content.slice(0, 1500);
-  } catch {
-    return "";
+  // try common README filenames via raw.githubusercontent.com (no auth needed)
+  const filenames = ["README.md", "readme.md", "Readme.md"];
+  for (const f of filenames) {
+    try {
+      const url = `https://raw.githubusercontent.com/${fullName}/HEAD/${f}`;
+      const res = await fetch(url);
+      if (res.ok) {
+        const text = await res.text();
+        return text.slice(0, 1500);
+      }
+    } catch {
+      // try next
+    }
   }
+  return "";
 }
