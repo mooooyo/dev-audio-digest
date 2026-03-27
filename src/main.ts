@@ -66,7 +66,7 @@ async function main() {
 
       const frontmatter = [
         "---",
-        "layout: post",
+        "layout: default",
         `title: "${today} ${category.name} 뉴스 정리"`,
         `date: ${today}`,
         `categories: ${category.name}`,

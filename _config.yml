@@ -1,6 +1,6 @@
 title: Dev Audio Digest
 description: Daily dev news digest
-theme: minima
+theme: jekyll-theme-midnight
 markdown: kramdown
 permalink: /:year/:month/:day/:title/
 
