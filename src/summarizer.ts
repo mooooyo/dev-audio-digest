@@ -97,7 +97,7 @@ Rules:
 - Write in markdown format
 - Title should be: "${today} ${config.name} 뉴스 정리"
 - Include original source links
-- Use code blocks for code/API changes
+- Use code blocks ONLY when there is actual code or API change to show. Do NOT make up example code.
 - Keep it concise but informative
 - Group by topic, not by source
 - Skip trivial items (patch-only, pre-release unless significant)
