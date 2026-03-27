@@ -8,7 +8,7 @@ const octokit = new Octokit({
 export async function collectGitHubReleases(
   config: CategoryConfig
 ): Promise<GitHubRelease[]> {
-  const repos = config.sources.github?.repos ?? [];
+  const repos = config.sources.core?.github_releases?.repos ?? [];
   const since = new Date();
   since.setDate(since.getDate() - 1); // last 24 hours
 

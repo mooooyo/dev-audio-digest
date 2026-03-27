@@ -2,6 +2,9 @@ import { writeFileSync, mkdirSync } from "fs";
 import { join } from "path";
 import { loadAllCategories } from "./category-loader.js";
 import { collectGitHubReleases } from "./collectors/github.js";
+import { collectChromeBlog } from "./collectors/chrome-blog.js";
+import { collectHackerNews } from "./collectors/hackernews.js";
+import { collectGitHubTrending } from "./collectors/github-trending.js";
 import type { CollectResult } from "./types.js";
 
 const DATA_DIR = join(import.meta.dirname, "..", "data");
@@ -15,26 +18,34 @@ async function main() {
   for (const category of categories) {
     console.log(`\n[${category.name}] collecting...`);
 
-    const releases = await collectGitHubReleases(category);
+    const [releases, chromeBlog, hn, trending] = await Promise.all([
+      collectGitHubReleases(category),
+      collectChromeBlog(category),
+      collectHackerNews(category),
+      collectGitHubTrending(category),
+    ]);
+
     console.log(`  GitHub releases: ${releases.length}`);
+    console.log(`  Chrome blog: ${chromeBlog.length}`);
+    console.log(`  Hacker News: ${hn.length}`);
+    console.log(`  Trending repos: ${trending.length}`);
 
     const result: CollectResult = {
       category: category.name,
       collected_at: new Date().toISOString(),
       github_releases: releases,
+      chrome_blog: chromeBlog,
+      hackernews: hn,
+      trending: trending,
     };
 
-    const filename = category.name.toLowerCase().replace(/[^a-z]/g, "") + ".json";
-    const filepath = join(dayDir, filename);
+    const filepath = join(dayDir, `${category.name}.json`);
     writeFileSync(filepath, JSON.stringify(result, null, 2), "utf-8");
     console.log(`  saved: ${filepath}`);
 
-    if (releases.length === 0) {
-      console.log(`  -> no new releases in the last 24 hours`);
-    } else {
-      for (const r of releases) {
-        console.log(`  -> ${r.repo} ${r.tag} (${r.prerelease ? "pre" : "stable"})`);
-      }
+    const total = releases.length + chromeBlog.length + hn.length + trending.length;
+    if (total === 0) {
+      console.log(`  -> nothing collected`);
     }
   }
 

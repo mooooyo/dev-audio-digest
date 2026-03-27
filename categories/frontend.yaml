@@ -1,27 +1,44 @@
 name: frontend
 enabled: true
+output: text
 
 sources:
-  github:
-    repos:
-      - facebook/react
-      - vuejs/core
-      - vercel/next.js
-      - vitejs/vite
-      - angular/angular
-      - sveltejs/svelte
-      - tailwindlabs/tailwindcss
-      - microsoft/TypeScript
-    watch:
-      - releases
-      - security
+  core:
+    chrome_developers:
+      url: https://developer.chrome.com/blog/feed.xml
+      type: rss
+    github_releases:
+      repos:
+        - facebook/react
+        - vercel/next.js
+        - microsoft/TypeScript
+      watch:
+        - releases
+    github_trending:
+      language: javascript
+      since: daily
 
-  npm:
-    track_downloads: true
-    alert_threshold: 20
+  secondary:
+    hackernews:
+      min_score: 100
+      keywords:
+        - javascript
+        - react
+        - nextjs
+        - typescript
+        - css
+        - frontend
+    javascript_weekly:
+      url: https://javascriptweekly.com/rss
+
+  optional:
+    devtools:
+      keywords:
+        - devtools
+        - lighthouse
+        - core-web-vitals
 
 prompt: |
-  프론트엔드 개발자 관점에서 오늘의 주요 소식을 요약해줘.
-  React, Next.js, Vite 등 주요 프레임워크 변화에 초점을 맞추고,
-  실무에 영향을 줄 수 있는 breaking change나 deprecation은 반드시 포함해.
-  자연스러운 한국어 대화체로 2-3분 분량의 오디오 스크립트를 작성해줘.
+  프론트엔드 개발자 관점에서 블로그 포스트 형식으로 요약해줘.
+  코드 변경사항은 코드블록으로, 링크는 원문 포함.
+  breaking change나 deprecation은 반드시 강조.
