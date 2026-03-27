@@ -35,8 +35,12 @@ function buildContext(data: CollectResult): string {
   if (data.trending.length > 0) {
     sections.push("## GitHub Trending");
     for (const repo of data.trending) {
-      sections.push(`- **${repo.name}** ⭐${repo.stars} (+${repo.stars_today} today): ${repo.description}`);
-      sections.push(`  URL: ${repo.url}`);
+      sections.push(`### ${repo.name} ⭐${repo.stars} (+${repo.stars_today} today)`);
+      sections.push(`${repo.description}`);
+      sections.push(`URL: ${repo.url}`);
+      if (repo.readme) {
+        sections.push(`README excerpt:\n${repo.readme}`);
+      }
     }
   }
 
@@ -67,6 +71,7 @@ Instructions:
 ${config.prompt}
 
 Rules:
+- MUST write entirely in Korean. Do NOT use Japanese or Chinese characters.
 - Write in markdown format
 - Title should be: "${today} ${config.name} 뉴스 정리"
 - Include original source links

@@ -68,6 +68,7 @@ export interface TrendingRepo {
   stars: number;
   stars_today: number;
   url: string;
+  readme: string;
 }
 
 export interface CollectResult {

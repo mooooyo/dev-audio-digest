@@ -1,4 +1,20 @@
+import { Octokit } from "@octokit/rest";
 import type { CategoryConfig, TrendingRepo } from "../types.js";
+
+const octokit = new Octokit({
+  auth: process.env.GITHUB_TOKEN,
+});
+
+async function fetchReadme(fullName: string): Promise<string> {
+  const [owner, repo] = fullName.split("/");
+  try {
+    const { data } = await octokit.repos.getReadme({ owner, repo });
+    const content = Buffer.from(data.content, "base64").toString("utf-8");
+    return content.slice(0, 1000); // first 1000 chars
+  } catch {
+    return "";
+  }
+}
 
 export async function collectGitHubTrending(
   config: CategoryConfig
@@ -17,7 +33,6 @@ export async function collectGitHubTrending(
     const articles = html.split('<article class="Box-row">').slice(1);
 
     for (const article of articles.slice(0, 10)) {
-      // repo name: <span>owner /</span> name inside <h2>
       const ownerMatch = article.match(
         /class="text-normal">\s*([^<]+?)\s*\/\s*<\/span>\s*([\s\S]*?)<\/a>/
       );
@@ -27,7 +42,6 @@ export async function collectGitHubTrending(
       const name = ownerMatch[2].replace(/<[^>]*>/g, "").trim();
       const fullName = `${owner}/${name}`;
 
-      // description
       const descMatch = article.match(
         /<p class="col-9[^"]*">\s*([\s\S]*?)\s*<\/p>/
       );
@@ -35,7 +49,6 @@ export async function collectGitHubTrending(
         ? descMatch[1].replace(/<[^>]*>/g, "").trim()
         : "";
 
-      // total stars: from stargazers link
       const starsMatch = article.match(
         /\/stargazers"[^>]*>[\s\S]*?([\d,]+)\s*<\/a>/
       );
@@ -43,13 +56,11 @@ export async function collectGitHubTrending(
         ? parseInt(starsMatch[1].replace(/,/g, ""))
         : 0;
 
-      // stars today
       const todayMatch = article.match(/([\d,]+)\s*stars\s*today/i);
       const starsToday = todayMatch
         ? parseInt(todayMatch[1].replace(/,/g, ""))
         : 0;
 
-      // language
       const langMatch = article.match(
         /itemprop="programmingLanguage">([^<]+)</
       );
@@ -61,8 +72,17 @@ export async function collectGitHubTrending(
         stars,
         stars_today: starsToday,
         url: `https://github.com/${fullName}`,
+        readme: "", // placeholder
       });
     }
+
+    // fetch READMEs in parallel
+    const readmes = await Promise.all(
+      repos.map((r) => fetchReadme(r.name))
+    );
+    repos.forEach((r, i) => {
+      r.readme = readmes[i];
+    });
 
     return repos;
   } catch (err) {
