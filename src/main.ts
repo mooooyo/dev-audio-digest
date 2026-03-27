@@ -11,7 +11,7 @@ import type { CollectResult } from "./types.js";
 
 const ROOT = join(import.meta.dirname, "..");
 const DATA_DIR = join(ROOT, "data");
-const POSTS_DIR = join(ROOT, "posts");
+const POSTS_DIR = join(ROOT, "_posts");
 
 async function main() {
   const categories = loadAllCategories();
@@ -64,8 +64,18 @@ async function main() {
         continue;
       }
 
+      const frontmatter = [
+        "---",
+        "layout: post",
+        `title: "${today} ${category.name} 뉴스 정리"`,
+        `date: ${today}`,
+        `categories: ${category.name}`,
+        "---",
+        "",
+      ].join("\n");
+
       const postPath = join(POSTS_DIR, `${today}-${category.name}.md`);
-      writeFileSync(postPath, markdown, "utf-8");
+      writeFileSync(postPath, frontmatter + markdown, "utf-8");
       console.log(`  post saved: ${postPath}`);
     }
   }

@@ -1,0 +1,15 @@
+title: Dev Audio Digest
+description: Daily dev news digest
+theme: minima
+markdown: kramdown
+permalink: /:year/:month/:day/:title/
+
+exclude:
+  - node_modules
+  - src
+  - categories
+  - data
+  - package.json
+  - package-lock.json
+  - tsconfig.json
+  - .env
