@@ -1,219 +1,206 @@
-# Frontend News Curator - 전체 기획 정리
+# Dev News Audio Briefing - 전체 기획 정리
 
-## 🎯 프로젝트 목표
-**"프론트엔드 개발 생태계의 진짜 중요한 변화만 선별해서 개인에게 정확하게 전달"**
+## 프로젝트 목표
+**"개발 생태계의 중요한 변화를 카테고리별로 매일 오디오 브리핑으로 듣기"**
 
 ### 핵심 가치
 - **중요도 우선**: 정보 과부하 방지, 정말 필요한 정보만
 - **정확성 중심**: 검증된 소스 우선, 잘못된 정보 최소화
 - **실무 지향**: 당장 내 프로젝트에 영향주는 정보 우선
-- **개인화**: 내가 사용하는 기술 스택 중심으로
+- **확장 가능**: 카테고리 추가만으로 새로운 분야 커버
+- **비용 0**: 전부 무료 인프라로 운영
 
 ### 해결하려는 문제
 - styled-components maintenance mode 같은 중요한 소식 놓치기
 - 너무 많은 뉴스레터/블로그로 인한 정보 피로
 - 트렌드 파악의 어려움 (뭐가 정말 중요한 변화인지)
 
-## 📊 정보 수집 전략
+## 전체 아키텍처
 
-### 수집 대상 (우선순위별)
-
-#### 1순위: 공식 소스 (GitHub API)
-**주요 라이브러리/프레임워크 릴리즈**
 ```
-- facebook/react
-- vuejs/core  
-- vercel/next.js
-- vitejs/vite
-- angular/angular
-- sveltejs/svelte
-- tailwindlabs/tailwindcss
-- microsoft/TypeScript
+GitHub Actions (매일 새벽 크론)
+  1. 카테고리별 수집: 설정 파일 기반으로 소스 순회
+  2. 요약: Gemini Flash로 카테고리별 한국어 오디오 스크립트 생성
+  3. 음성: Edge TTS로 mp3 생성
+  4. 전달: Discord webhook으로 카테고리별 채널에 mp3 전송
 ```
 
-#### 2순위: npm 생태계 트렌드
-**분석 기준 3가지**
-1. **얼마나 많이 쓰는가?**
-   - 주간/월간 다운로드 수
-   - GitHub stars, dependents 수
-   - Stack Overflow 언급 빈도
+## 카테고리 시스템
 
-2. **유지보수가 되고 있는가?**
-   - 마지막 릴리즈 날짜
-   - 이슈 응답률/해결률
-   - 활성 컨트리뷰터 수
+### 구조
+각 카테고리는 독립적인 설정 파일로 관리. 새 카테고리 추가 = 설정 파일 하나 추가.
 
-3. **이용자수의 큰 변화가 있나?**
-   - 월간 다운로드 증감률 (±20% 이상)
-   - 경쟁 라이브러리 대비 점유율 변화
-
-#### 3순위: 커뮤니티 검증 소스
-**Reddit**
-- r/javascript, r/reactjs (상위 포스트)
-- 높은 upvote = 커뮤니티 검증 완료
-
-**Hacker News**
-- Front page 기술 관련 포스트
-- 높은 score + comments 수
-
-#### 4순위: 주요 개발자 개인 채널 (향후)
-- Twitter/X 주요 메인테이너들
-- 개인 블로그, 컨퍼런스 발표
-
-### 수집 방법
-- **GitHub API**: 릴리즈, 이슈, discussions
-- **npm API**: 다운로드 통계, 패키지 메타데이터
-- **웹 스크래핑**: Reddit, Hacker News
-- **키워드 트렌딩**: 급증하는 검색어 감지
-
-## 🤖 분석 및 평가 전략
-
-### 하이브리드 아키텍처 (비용 최적화)
-
-#### 클라우드 자동화 (GitHub Actions)
 ```
-📊 수집 단계 (24시간 주기)
-├── GitHub API로 릴리즈 수집
-├── npm API로 패키지 트렌드 수집
-├── Reddit/HN 스크래핑  
-├── 원시 데이터 JSON으로 저장 (data/YYYY-MM-DD.json)
-└── 새 데이터 있을 시 로컬에 알림
+categories/
+├── frontend.yaml      # 프론트엔드
+├── backend.yaml       # 백엔드 (향후)
+├── ai-ml.yaml         # AI/ML (향후)
+├── devops.yaml        # DevOps (향후)
+└── security.yaml      # 보안 (향후)
 ```
 
-#### 로컬 분석 (MCP + Claude)
-```
-🤖 분석 & 큐레이션 단계 (수동 트리거)
-├── MCP로 수집된 데이터 읽기
-├── Claude API로 중요도 분석
-├── 한국어 요약 및 영향도 평가
-└── 사람이 최종 큐레이션 (품질 보장)
-```
+### 카테고리 설정 파일 예시 (frontend.yaml)
+```yaml
+name: 프론트엔드
+enabled: true
+discord_channel: frontend-news  # 채널별 분리 가능
 
-### 중요도 판단 기준
+sources:
+  github:
+    repos:
+      - facebook/react
+      - vuejs/core
+      - vercel/next.js
+      - vitejs/vite
+      - angular/angular
+      - sveltejs/svelte
+      - tailwindlabs/tailwindcss
+      - microsoft/TypeScript
+    watch: [releases, security]
 
-#### 자동 필터링 (1차)
-- **공식성**: GitHub official > 커뮤니티 > 개인 블로그
-- **Breaking changes**: major version, deprecation, security fix
-- **영향 범위**: npm 다운로드 수, GitHub stars
-- **커뮤니티 반응**: upvotes, comments, mentions
+  npm:
+    track_downloads: true
+    alert_threshold: 20  # 다운로드 증감률 %
 
-#### AI 분석 (2차 - Claude API)
-**평가 기준**
-1. **실무 영향도** (1-10): 내 프로젝트에 영향을 줄까?
-2. **시급성** (1-10): 당장 알아야 할 정보인가?  
-3. **트렌드 중요성** (1-10): 앞으로 중요해질 정보인가?
-4. **액션 필요 여부**: 구체적으로 뭘 해야 하는가?
+  community:  # 향후
+    reddit: [r/javascript, r/reactjs]
+    hackernews: true
 
-#### 우선순위 분류
-```
-🔴 긴급 (즉시 알림): 
-- Major version 업데이트
-- Deprecation/maintenance mode 발표
-- Critical security fix
-- npm 다운로드 급변 (30%+ 변화)
-
-🟡 중요 (일간 리포트):
-- Minor version with new features
-- 새로운 인기 라이브러리 등장 (급성장)
-- 성능 관련 중요 개선
-
-🟢 참고 (주간 요약):
-- Patch updates
-- 커뮤니티 토론 이슈
-- 학습 자료 추천
+prompt: |
+  프론트엔드 개발자 관점에서 요약해줘.
+  React, Next.js 등 주요 프레임워크 변화에 초점.
 ```
 
-## 📧 전달 방식
+### 첫 번째 카테고리: 프론트엔드
+위 예시가 v1으로 먼저 구현할 카테고리.
 
-### React.email 활용 (실무 연습 겸)
+### 향후 추가 예시
+```yaml
+# backend.yaml
+name: 백엔드
+sources:
+  github:
+    repos:
+      - nodejs/node
+      - denoland/deno
+      - spring-projects/spring-boot
+      - nestjs/nest
 
-#### 이메일 템플릿 종류
+# ai-ml.yaml
+name: AI/ML
+sources:
+  github:
+    repos:
+      - pytorch/pytorch
+      - huggingface/transformers
+      - langchain-ai/langchain
 ```
-email-templates/
-├── templates/
-│   ├── urgent-alert.tsx      # 🔴 긴급 알림
-│   ├── daily-digest.tsx      # 🟡 일일 요약 
-│   └── weekly-summary.tsx    # 🟢 주간 트렌드
-├── components/
-│   ├── header.tsx
-│   ├── article-card.tsx
-│   ├── npm-trend-card.tsx
-│   └── footer.tsx
-└── send/
-    └── mailer.ts
+
+## 정보 수집
+
+### 수집 엔진 (카테고리 공통)
+카테고리 설정 파일의 sources를 읽어서 동일한 수집 로직으로 처리.
+
+#### GitHub API
+- 릴리즈 (new releases, pre-releases)
+- Security advisories
+- Discussions 주요 이슈
+
+#### npm API
+- 주간/월간 다운로드 수
+- 다운로드 증감률 추적
+- 패키지 메타데이터
+
+#### 커뮤니티 소스 (향후)
+- Reddit 상위 포스트
+- Hacker News front page
+
+### 수집 결과 저장
+```
+data/
+├── 2026-03-28/
+│   ├── frontend.json
+│   ├── backend.json    # 카테고리 추가 시
+│   └── ai-ml.json
 ```
 
-#### 발송 플로우
-1. **MCP에서 분석 완료** → Claude가 중요도 판단
-2. **React.email로 렌더링** → 예쁜 HTML 생성  
-3. **Nodemailer로 발송** → Gmail SMTP 활용
+## 분석 및 요약 (Gemini Flash)
 
-#### 콘텐츠 구성
-- **헤드라인**: 가장 중요한 1-2개 소식
-- **릴리즈 요약**: 주요 라이브러리 업데이트
-- **npm 트렌드**: 급변하는 패키지들
-- **액션 아이템**: 구체적으로 해야 할 일들
+### 1차: 규칙 기반 자동 필터링 (공통)
+- Breaking changes: major version, deprecation, security fix
+- 영향 범위: npm 다운로드 수, GitHub stars
+- 커뮤니티 반응: upvotes, comments, mentions
 
-## 🚀 구현 로드맵
+### 2차: Gemini Flash로 요약
+- 카테고리별 설정의 prompt를 사용해 맞춤 요약
+- 필터링된 데이터만 전달 (토큰 절약)
+- 한국어 오디오 스크립트 형태로 생성
+- 자연스러운 대화체 ("오늘의 프론트엔드 소식입니다...")
 
-### Phase 1: 기본 수집 시스템 (2-3주)
-- GitHub API 연동 및 데이터 수집
-- 기본적인 JSON 저장 구조
-- GitHub Actions 자동화 설정
+### 우선순위 분류 (공통)
+```
+긴급: Major version, Deprecation, Critical security fix
+일간: Minor version with features, 인기 라이브러리 급성장, npm 급변
+```
 
-### Phase 2: npm 트렌드 분석 (2주)
+## 음성 변환 (Edge TTS)
+
+- Microsoft Edge TTS (무료, 한국어 지원)
+- 카테고리별 2-3분 분량 mp3 생성
+- 소식 없는 카테고리는 스킵
+
+## 전달 (Discord Webhook)
+
+- 카테고리별 Discord 채널에 mp3 전송
+- 또는 하나의 채널에 카테고리 태그와 함께 전송
+- webhook URL로 HTTP POST, 서버 불필요
+
+## 기술 스택
+
+| 영역 | 기술 | 비용 |
+|------|------|------|
+| 수집 | GitHub API, npm API | 무료 |
+| 자동화 | GitHub Actions (크론) | 무료 (2000분/월) |
+| 요약 | Gemini Flash API | 무료 tier |
+| TTS | Edge TTS | 무료 |
+| 전달 | Discord Webhook | 무료 |
+| **총 비용** | | **0원** |
+
+## 구현 로드맵
+
+### Phase 1: 카테고리 시스템 + 수집
+- 카테고리 설정 파일 구조 정의
+- GitHub API 연동 (릴리즈 수집)
+- 프론트엔드 카테고리로 먼저 구현
+
+### Phase 2: 요약 + TTS + Discord
+- Gemini Flash 연동, 카테고리별 오디오 스크립트 생성
+- Edge TTS로 mp3 생성
+- Discord webhook 연동
+- 로컬에서 전체 파이프라인 테스트
+
+### Phase 3: GitHub Actions 자동화
+- 크론잡 설정 (매일 새벽)
+- secrets 설정 (Gemini API key, Discord webhook URL)
+- 자동 배치 실행
+
+### Phase 4: npm 트렌드 추가
 - npm API 연동
-- 다운로드 수, 의존성 추적
-- 변화율 계산 및 이상 징후 탐지
+- 다운로드 수 변화율 추적
 
-### Phase 3: 분석 & 큐레이션 (2-3주)
-- MCP 연동 설정
-- Claude API 분석 로직 개발
-- 로컬 큐레이션 워크플로우 구축
+### Phase 5: 카테고리 확장
+- 백엔드, AI/ML 등 새 카테고리 추가
+- 커뮤니티 소스 (Reddit/HN) 추가
+- 주간 종합 요약 생성
 
-### Phase 4: 이메일 발송 시스템 (2주)
-- React.email 셋업 및 템플릿 개발
-- 발송 로직 구현
-- 테스트 및 디버깅
-
-### Phase 5: 확장 & 개선 (지속적)
-- Reddit/HN 스크래핑 추가
-- 개인화 기능 (관심 기술스택별)
-- 피드백 루프 및 품질 개선
-
-## 🎯 성공 지표
-
-### 정량적 지표
+## 성공 지표
 - **적시성**: 중요한 소식을 며칠 내에 캐치했는가?
 - **정확성**: 잘못된 정보나 과장된 소식은 없었는가?
-- **실용성**: 실제로 프로젝트에 도움이 되는 정보 비율
+- **습관화**: 매일 아침 듣는 루틴이 만들어졌는가?
+- **확장성**: 새 카테고리 추가가 설정 파일 하나로 끝나는가?
 
-### 정성적 지표
-- **"아, 이거 놓칠 뻔했네"** 순간들
-- **실무에서 바로 적용**한 정보들
-- **시간 절약**: 여러 소스 체크하는 시간 단축
+## 개발 원칙
 
-## 💡 차별화 포인트
-
-### vs Bytes.dev 같은 기존 서비스
-- **개인화**: 내 기술 스택 중심
-- **즉시성**: AI 자동 분석으로 더 빠른 감지
-- **실무 중심**: "읽을거리" < "해야할 일"
-- **한국어**: 복잡한 기술 내용 한국어 요약
-
-### 핵심 가치 제안
-"매일 30분씩 여러 사이트 체크하는 대신, 5분만에 정말 중요한 정보만 확인"
-
----
-
-## 🛠 개발 원칙
-
-**학습 중심 개발**
-- 각 기술 스택을 배워가며 구현
-- 실무에 적용 가능한 패턴 학습
-- 단계별 리뷰 & 개선
-
-**점진적 개선**
 - 완벽하게 만들려 하지 말고 빠르게 시작
-- 사용하면서 문제점 발견 및 개선
-- 피드백 기반 지속적 발전
+- 프론트엔드 카테고리 하나로 먼저 완성 후 확장
+- 비용 0 유지 (무료 tier 범위 내에서)

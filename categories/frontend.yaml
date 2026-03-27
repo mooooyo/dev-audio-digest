@@ -1,0 +1,27 @@
+name: frontend
+enabled: true
+
+sources:
+  github:
+    repos:
+      - facebook/react
+      - vuejs/core
+      - vercel/next.js
+      - vitejs/vite
+      - angular/angular
+      - sveltejs/svelte
+      - tailwindlabs/tailwindcss
+      - microsoft/TypeScript
+    watch:
+      - releases
+      - security
+
+  npm:
+    track_downloads: true
+    alert_threshold: 20
+
+prompt: |
+  프론트엔드 개발자 관점에서 오늘의 주요 소식을 요약해줘.
+  React, Next.js, Vite 등 주요 프레임워크 변화에 초점을 맞추고,
+  실무에 영향을 줄 수 있는 breaking change나 deprecation은 반드시 포함해.
+  자연스러운 한국어 대화체로 2-3분 분량의 오디오 스크립트를 작성해줘.
