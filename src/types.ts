@@ -87,6 +87,7 @@ export interface BestOfJSProject {
   repo: string;
   url: string;
   description: string;
+  readme: string;
 }
 
 export interface CollectResult {

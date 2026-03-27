@@ -1,9 +1,5 @@
-import { Octokit } from "@octokit/rest";
+import { octokit, fetchReadme } from "./github-utils.js";
 import type { CategoryConfig, BestOfJSProject } from "../types.js";
-
-const octokit = new Octokit({
-  auth: process.env.GITHUB_TOKEN,
-});
 
 export async function collectBestOfJS(
   _config: CategoryConfig
@@ -12,7 +8,6 @@ export async function collectBestOfJS(
     const res = await fetch("https://bestofjs.org/rankings/monthly");
     const html = await res.text();
 
-    // extract unique project slug + github repo pairs
     const repoMatches = [
       ...html.matchAll(
         /github\.com\/([^"]+?)(?=" aria-label="GitHub repository)/g
@@ -22,10 +17,8 @@ export async function collectBestOfJS(
       ...html.matchAll(/href="\/projects\/([^"]+)"/g),
     ];
 
-    // dedupe slugs (each appears twice in the HTML)
     const seen = new Set<string>();
     const projects: { slug: string; repo: string }[] = [];
-
     const repos = repoMatches.map((m) => m[1]);
     let repoIdx = 0;
 
@@ -39,7 +32,6 @@ export async function collectBestOfJS(
       }
     }
 
-    // take top 10, fetch descriptions from GitHub
     const top10 = projects.slice(0, 10);
 
     const results = await Promise.all(
@@ -52,11 +44,15 @@ export async function collectBestOfJS(
         } catch {
           // ignore
         }
+
+        const readme = await fetchReadme(p.repo);
+
         return {
           name: p.slug,
           repo: p.repo,
           url: `https://github.com/${p.repo}`,
           description,
+          readme,
         };
       })
     );

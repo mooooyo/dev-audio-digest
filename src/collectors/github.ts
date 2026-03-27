@@ -1,9 +1,5 @@
-import { Octokit } from "@octokit/rest";
+import { octokit } from "./github-utils.js";
 import type { CategoryConfig, GitHubRelease } from "../types.js";
-
-const octokit = new Octokit({
-  auth: process.env.GITHUB_TOKEN,
-});
 
 export async function collectGitHubReleases(
   config: CategoryConfig

@@ -1,20 +1,5 @@
-import { Octokit } from "@octokit/rest";
+import { fetchReadme } from "./github-utils.js";
 import type { CategoryConfig, TrendingRepo } from "../types.js";
-
-const octokit = new Octokit({
-  auth: process.env.GITHUB_TOKEN,
-});
-
-async function fetchReadme(fullName: string): Promise<string> {
-  const [owner, repo] = fullName.split("/");
-  try {
-    const { data } = await octokit.repos.getReadme({ owner, repo });
-    const content = Buffer.from(data.content, "base64").toString("utf-8");
-    return content.slice(0, 1000); // first 1000 chars
-  } catch {
-    return "";
-  }
-}
 
 export async function collectGitHubTrending(
   config: CategoryConfig

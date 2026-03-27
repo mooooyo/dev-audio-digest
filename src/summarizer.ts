@@ -57,8 +57,12 @@ function buildContext(data: CollectResult): string {
   if (data.bestofjs.length > 0) {
     sections.push("## Best of JS - Monthly Rising Stars");
     for (const p of data.bestofjs) {
-      sections.push(`- **${p.repo}**: ${p.description}`);
-      sections.push(`  URL: ${p.url}`);
+      sections.push(`### ${p.repo}`);
+      sections.push(`${p.description}`);
+      sections.push(`URL: ${p.url}`);
+      if (p.readme) {
+        sections.push(`README excerpt:\n${p.readme}`);
+      }
     }
   }
 
