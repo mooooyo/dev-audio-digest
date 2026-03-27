@@ -4,11 +4,14 @@
   "description": "Daily dev news audio digest via GitHub Actions + Gemini + TTS + Discord",
   "type": "module",
   "scripts": {
-    "collect": "tsx src/collect.ts"
+    "collect": "tsx src/collect.ts",
+    "start": "tsx src/main.ts"
   },
   "dependencies": {
+    "@google/generative-ai": "^0.24.1",
     "@octokit/rest": "^21.0.0",
     "dotenv": "^17.2.2",
+    "groq-sdk": "^1.1.2",
     "rss-parser": "^3.13.0",
     "yaml": "^2.6.0"
   },

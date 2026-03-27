@@ -1,0 +1,35 @@
+name: Daily Digest
+
+on:
+  schedule:
+    - cron: '0 21 * * *'  # 06:00 KST (21:00 UTC)
+  workflow_dispatch: # manual trigger
+
+permissions:
+  contents: write
+
+jobs:
+  digest:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - run: npm ci
+
+      - name: Run pipeline
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
+        run: npm start
+
+      - name: Commit posts
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add posts/
+          git diff --cached --quiet || git commit -m "post: $(date -u +%Y-%m-%d) daily digest"
+          git push
