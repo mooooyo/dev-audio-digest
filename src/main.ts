@@ -7,6 +7,7 @@ import { collectChromeBlog } from "./collectors/chrome-blog.js";
 import { collectHackerNews } from "./collectors/hackernews.js";
 import { collectGitHubTrending } from "./collectors/github-trending.js";
 import { collectNpmTrends } from "./collectors/npm-trends.js";
+import { collectBestOfJS } from "./collectors/bestofjs.js";
 import { summarize } from "./summarizer.js";
 import type { CollectResult } from "./types.js";
 
@@ -25,12 +26,13 @@ async function main() {
     // 1. collect
     console.log(`\n[${category.name}] collecting...`);
 
-    const [releases, chromeBlog, hn, trending, npmTrends] = await Promise.all([
+    const [releases, chromeBlog, hn, trending, npmTrends, bestofjs] = await Promise.all([
       collectGitHubReleases(category),
       collectChromeBlog(category),
       collectHackerNews(category),
       collectGitHubTrending(category),
       collectNpmTrends(category),
+      collectBestOfJS(category),
     ]);
 
     console.log(`  GitHub releases: ${releases.length}`);
@@ -38,6 +40,7 @@ async function main() {
     console.log(`  Hacker News: ${hn.length}`);
     console.log(`  Trending repos: ${trending.length}`);
     console.log(`  npm trends: ${npmTrends.length}`);
+    console.log(`  Best of JS: ${bestofjs.length}`);
 
     const data: CollectResult = {
       category: category.name,
@@ -47,12 +50,13 @@ async function main() {
       hackernews: hn,
       trending: trending,
       npm_trends: npmTrends,
+      bestofjs: bestofjs,
     };
 
     const dataPath = join(dayDir, `${category.name}.json`);
     writeFileSync(dataPath, JSON.stringify(data, null, 2), "utf-8");
 
-    const total = releases.length + chromeBlog.length + hn.length + trending.length + npmTrends.length;
+    const total = releases.length + chromeBlog.length + hn.length + trending.length + npmTrends.length + bestofjs.length;
     if (total === 0) {
       console.log(`  -> nothing collected, skipping summary`);
       continue;

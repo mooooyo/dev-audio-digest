@@ -82,6 +82,13 @@ export interface NpmTrend {
   change_pct: number;
 }
 
+export interface BestOfJSProject {
+  name: string;
+  repo: string;
+  url: string;
+  description: string;
+}
+
 export interface CollectResult {
   category: string;
   collected_at: string;
@@ -90,4 +97,5 @@ export interface CollectResult {
   hackernews: HNStory[];
   trending: TrendingRepo[];
   npm_trends: NpmTrend[];
+  bestofjs: BestOfJSProject[];
 }

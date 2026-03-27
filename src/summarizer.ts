@@ -54,6 +54,14 @@ function buildContext(data: CollectResult): string {
     }
   }
 
+  if (data.bestofjs.length > 0) {
+    sections.push("## Best of JS - Monthly Rising Stars");
+    for (const p of data.bestofjs) {
+      sections.push(`- **${p.repo}**: ${p.description}`);
+      sections.push(`  URL: ${p.url}`);
+    }
+  }
+
   return sections.join("\n\n");
 }
 
