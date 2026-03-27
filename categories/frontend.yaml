@@ -18,6 +18,20 @@ sources:
       language: javascript
       since: daily
 
+    npm:
+      packages:
+        - react
+        - react-dom
+        - next
+        - typescript
+        - vite
+        - svelte
+        - tailwindcss
+        - vue
+        - angular
+        - "@angular/core"
+      alert_threshold: 20
+
   secondary:
     hackernews:
       min_score: 100

@@ -16,6 +16,10 @@ export interface CategoryConfig {
         language: string;
         since: string;
       };
+      npm?: {
+        packages: string[];
+        alert_threshold: number;
+      };
     };
     secondary?: {
       hackernews?: {
@@ -71,6 +75,13 @@ export interface TrendingRepo {
   readme: string;
 }
 
+export interface NpmTrend {
+  package: string;
+  last_week: number;
+  this_week: number;
+  change_pct: number;
+}
+
 export interface CollectResult {
   category: string;
   collected_at: string;
@@ -78,4 +89,5 @@ export interface CollectResult {
   chrome_blog: RSSItem[];
   hackernews: HNStory[];
   trending: TrendingRepo[];
+  npm_trends: NpmTrend[];
 }

@@ -44,6 +44,16 @@ function buildContext(data: CollectResult): string {
     }
   }
 
+  if (data.npm_trends.length > 0) {
+    sections.push("## npm Download Trends (this week vs last week)");
+    for (const t of data.npm_trends) {
+      const arrow = t.change_pct >= 0 ? "📈" : "📉";
+      sections.push(
+        `- **${t.package}**: ${t.last_week.toLocaleString()} → ${t.this_week.toLocaleString()} (${arrow} ${t.change_pct > 0 ? "+" : ""}${t.change_pct}%)`
+      );
+    }
+  }
+
   return sections.join("\n\n");
 }
 
