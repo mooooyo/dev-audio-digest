@@ -79,7 +79,8 @@ Rules:
 - Keep it concise but informative
 - Group by topic, not by source
 - Skip trivial items (patch-only, pre-release unless significant)
-- If there's nothing noteworthy, say so briefly`,
+- If there's nothing noteworthy, say so briefly
+- Include ALL GitHub Trending repos provided in the data. Do not omit any.`,
       },
       {
         role: "user",
